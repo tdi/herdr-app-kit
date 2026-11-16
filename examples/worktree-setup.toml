@@ -14,7 +14,7 @@ steps = [
 ]
 
 # [[project]]
-# path = "~/Projects/portal"
+# path = "~/Projects/my-app"
 # steps = [
 #   'cp "$HERDR_MAIN_REPO"/.env* . 2>/dev/null || true',
 #   "mise trust",

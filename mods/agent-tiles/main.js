@@ -39,7 +39,7 @@ function expandSidebar() {
   run("layout.resize", { id: "sidebar", px: shared("sidebar.width") ?? 268 });
 }
 
-// "my-shop-api" -> MS, "feature-eng-1712-…" -> E1, "portal" -> PO.
+// "my-shop-api" -> MS, "feature-eng-123-…" -> E1, "backend" -> BA.
 export function initials(name) {
   const words = (name ?? "").split(/[\s\-_/.]+/).filter(Boolean);
   while (words.length > 1 && NOISE.has(words[0].toLowerCase())) words.shift();

@@ -60,7 +60,7 @@ const MERGED_EVERY = 5 * 60000;
 const DEV_EVERY = 30000;
 const TILT_PORTS = Array.from({ length: 10 }, (_, i) => 10350 + i);
 // "<slot> <worktree path>" lines: which checkout runs the Tilt on port 10350 + slot.
-const TILT_SLOTS = "$HOME/.cache/portal-tilt/slots";
+const TILT_SLOTS = "$HOME/.cache/tilt-slots";
 // Tilt's /api/view is over 1 MB (logs): cut down to [name, runtime, update] on the machine.
 const SLIM = `slim() { if command -v jq >/dev/null 2>&1; then jq -c '[.uiResources[]? | [.metadata.name, .status.runtimeStatus, .status.updateStatus]]' 2>/dev/null; else python3 -c 'import json,sys
 try: print(json.dumps([[r["metadata"]["name"], r.get("status",{}).get("runtimeStatus"), r.get("status",{}).get("updateStatus")] for r in json.load(sys.stdin).get("uiResources",[])]))

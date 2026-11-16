@@ -242,7 +242,7 @@ export default class Linear extends View {
   }
 
   // The repo an issue goes to, by name: the one picked in its row, else the title's
-  // "repo:" prefix ("portal: …"), else the focused repo when it's one of those.
+  // "repo:" prefix ("backend: …"), else the focused repo when it's one of those.
   target(issue) {
     const names = new Set(this.repos.map((r) => r.name));
     if (this.picked[issue.id]) return this.picked[issue.id];

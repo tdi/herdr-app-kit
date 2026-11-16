@@ -3,7 +3,7 @@
 // pipeline jobs (`glab ci get`). Polls every 10 s while anything runs, every 60 s when settled.
 // Click a check to open it; failed ones get Log (a terminal below), Re-run and Fix (Claude).
 // Above the checks, a pipeline strip: PR → CI → Review → Merged, and for branches with a
-// ticket of your Linear team (shared "linear.teamKey", e.g. bit-123) first Spec (docs/specs, open [QUESTION]s) and
+// ticket of your Linear team (shared "linear.teamKey", e.g. eng-123) first Spec (docs/specs, open [QUESTION]s) and
 // Review loop (docs/reviews/<TICKET>-ledger.md: CONVERGED / CHURN / CAP / ERROR), last
 // the Linear state (shared "linear.states", written by the linear mod).
 
@@ -12,8 +12,8 @@ import { v_flex, h_flex, Scrollbar } from "gpui-base";
 import { spaces, panes, focused, exec, run, theme, knownAgents, layout, readTextFile, shared } from "herdr";
 
 
-// team-eng state for a ticket in the checkout `top`: its spec and review-loop ledger.
-async function teamEng(top, ticket, on) {
+// Spec-workflow state for a ticket in the checkout `top`: its spec and review-loop ledger.
+async function specState(top, ticket, on) {
   const ls = await sh("sh", ["-c", 'for d in docs/specs docs/reviews; do ls "$d" 2>/dev/null | sed "s|^|$d/|"; done'], { cwd: top, on });
   const files = ls.ok ? ls.out.split("\n") : [];
   const id = new RegExp(`(^|[^0-9a-z])${ticket.toLowerCase()}([^0-9]|$)`);
@@ -212,7 +212,7 @@ export default class Ci extends View {
         const key = shared("linear.teamKey");
         const ticket = key ? new RegExp(`(?:^|[^a-z])${key}-(\\d+)`, "i").exec(branch.out) : null;
         const pipe = { ticket: ticket ? `${key.toUpperCase()}-${ticket[1]}` : null };
-        if (pipe.ticket) Object.assign(pipe, await teamEng(top.out, pipe.ticket, on));
+        if (pipe.ticket) Object.assign(pipe, await specState(top.out, pipe.ticket, on));
         if (JSON.stringify(location()) !== context) return;
         Object.assign(this, { repo: top.out, on, branch: branch.out, provider, target: res.target, checks: res.checks, error: null, pipe });
         this.pending = res.checks.some((c) => c.bucket === "pending");
