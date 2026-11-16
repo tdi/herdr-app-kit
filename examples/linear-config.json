@@ -1,0 +1,12 @@
+{
+  "linearApiKey": "lin_api_\u2026",
+  "teamKey": "ENG",
+  "issueLimit": 50,
+  "includeTriage": true,
+  "base": "default",
+  "worktreeRoot": "~/Projects/worktrees",
+  "agentMachine": "my-desktop",
+  "repoOrgs": [
+    "my-company"
+  ]
+}

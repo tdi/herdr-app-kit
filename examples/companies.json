@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Work",
+    "match": "github\\.com[:/]my-company/",
+    "color": "ansi4"
+  },
+  {
+    "name": "Client",
+    "match": "gitlab\\.com[:/]client-group/",
+    "color": "ansi3"
+  }
+]
