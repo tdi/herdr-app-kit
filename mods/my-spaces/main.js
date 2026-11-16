@@ -425,9 +425,19 @@ export default class Spaces extends View {
       const kids = list.filter((k) => nested(k) && k.g.repo === r.g.repo);
       kids.forEach((k, n) => block.push({ ...k, tree: n === kids.length - 1 ? "└─" : "├─", company }));
     }
-    // Company groups in COMPANIES order (stable within each); the real order follows.
+    // Company groups in COMPANIES order (stable within each), inside each machine's own
+    // block: space.move can't take a space across machines, so a target mixing them
+    // could never be reached and the moves would repeat forever (two connected screens
+    // fighting over the order, names flickering). A machine is only sorted once git has
+    // answered for every one of its spaces, so a half-loaded screen doesn't move anything.
+    const mkey = (w) => w.machine ?? "";
+    const mrank = new Map();
+    for (const w of sp) if (!mrank.has(mkey(w))) mrank.set(mkey(w), mrank.size);
+    const known = new Map();
+    for (const w of sp) known.set(mkey(w), (known.get(mkey(w)) ?? true) && where(w, ps) in this.git);
+    const rank = (b) => known.get(mkey(b[0].w)) ? companyRank(b[0].company) : 0;
     const out = blocks.map((b, n) => ({ b, n }))
-      .sort((x, y) => companyRank(x.b[0].company) - companyRank(y.b[0].company) || x.n - y.n)
+      .sort((x, y) => mrank.get(mkey(x.b[0].w)) - mrank.get(mkey(y.b[0].w)) || rank(x.b) - rank(y.b) || x.n - y.n)
       .flatMap((x) => x.b);
     // Simulate the batch so later indexes include earlier moves. An attempted
     // write can lose a sync conflict: allow the echo to settle before retrying.
@@ -543,13 +553,14 @@ export default class Spaces extends View {
   // and the name both start from their text's width and give way in proportion.
   gitTail(g, tree, name, t) {
     const raw = g.branch ?? "detached";
-    const same = (a) => a.toLowerCase() === name.toLowerCase();
+    const norm = (a) => a.toLowerCase().replace(/[^0-9a-z]+/g, "-");
+    const same = (a) => norm(a) === norm(name);
     const branch = same(raw) || raw === "master" || raw === "main" ? "" : raw;
     const repo = tree || same(g.name) ? "" : g.name;
     const where = [repo, branch].filter(Boolean).join(" \u00b7 ");
     return h_flex()
-      .flex_auto()
-      .min_w(where ? SIDE_MIN : 0)
+      .flex_1()
+      .min_w(0)
       .gap(5)
       .justify_end()
       .items_center()
@@ -782,8 +793,17 @@ export default class Spaces extends View {
       .child("merged · remove");
   }
 
+  // Width a space's name may take: the list minus the row's padding, icon, gaps and chips,
+  // leaving ~40px so ahead/behind still shows.
+  nameRoom(tree, chips) {
+    const icon = tree ? 22 + 13 : 18;
+    return Math.max(SIDE_MIN, (this.listW ?? 240) - 16 - 16 - icon - 9 - chips - 40);
+  }
+
   row({ w, i, g, tree }, t) {
     const on = w.active;
+    const merged = this.mergedChip(w, t), dev = this.devChip(w, g, t);
+    const chips = (merged ? 100 : 0) + (dev ? 70 : 0);
     const fromIndex = this.pressed === null ? -1 : spaces().findIndex(s => s.id === this.pressed);
     const colors = shared("space.colors") ?? {};
     const color = colors[w.id] ?? "ansi6";
@@ -834,9 +854,11 @@ export default class Spaces extends View {
           .items_center()
           .when(Boolean(tree), el => el.pl(22).child(svg("mods/workspace-chrome/branch.svg").size(13).flex_none().text_color(t.dim)))
           .when(!tree, el => el.child(h_flex().size(18).flex_none().rounded(5).bg(fill).items_center().justify_center().text_size(10.5).font_bold().text_color("#ffffff").child([...w.name][0]?.toUpperCase() ?? "?")))
-          .child(div().flex_initial().min_w(SIDE_MIN).truncate().text_color(t.foreground).child(w.name))
-          .child(this.mergedChip(w, t) ?? (g ? this.gitTail(g, tree, w.name, t) : div().flex_1()))
-          .when(Boolean(this.devChip(w, g, t)), (el) => el.child(this.devChip(w, g, t))),
+          // The name keeps its room and the git tail gets what's left (it can vanish):
+          // on a narrow sidebar a long branch otherwise squeezes the name to "whenubu…".
+          .child(div().flex_shrink_0().max_w(this.nameRoom(tree, chips)).truncate().text_color(t.foreground).child(w.name))
+          .child(merged ?? (g ? this.gitTail(g, tree, w.name, t) : div().flex_1()))
+          .when(Boolean(dev), (el) => el.child(dev)),
       );
   }
 
@@ -889,7 +911,7 @@ export default class Spaces extends View {
           .on_click(() => run("space.new")).child(svg("mods/workspace-chrome/plus.svg").size(14))))
       .child(v_flex().flex_1().min_h(0).px(collapsed ? 0 : 8).pb(14).overflow_y_scrollbar().mode("always").track_scroll(this.scroll)
         // A block above (another mod's) growing, or the window resizing, shrinks this list and can push the active space out.
-        .on_size_change((_size, cx) => { if (this.activeAt >= 0) { this.scroll.scroll_to_item(this.activeAt); cx.notify(); } })
+        .on_size_change((size, cx) => { this.listW = size.width; if (this.activeAt >= 0) this.scroll.scroll_to_item(this.activeAt); cx.notify(); })
         .on_mouse_up("left", (_e, cx) => { this.pressed = null; cx.notify(); })
         .children(list));
   }
