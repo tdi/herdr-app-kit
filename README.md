@@ -16,6 +16,7 @@ Everything here is plain Herdr app files: a layout JSON and gpui-kit mods. Read 
 | `mods/prs` | Open GitHub PRs (`gh`) or GitLab MRs (`glab`) of the focused repo. Filters: All, Mine, To review. Actions: **Worktree**, **Worktree + Claude** (asks Claude to review it) and **Open**. Same-repo PRs check out their real branch; fork PRs go to `pr-<N>`. |
 | `mods/ci` | Checks of the focused branch on GitHub or GitLab. Failed checks get Log, Re-run and Fix with Claude. Above the checks is a pipeline strip, described below. |
 | `mods/my-status` | Herdr's status bar plus a Docker (Colima) indicator for the machine of the space you're in. |
+| `claude/herdr-badge` | A Claude Code plugin, not a Herdr mod. Above Claude's prompt, on the left, it shows the Herdr space, agent and tab of the terminal Claude runs in, e.g. `portal · claude-code · tab 2`. It reads `HC_TERMINAL_ID` and `herdr-app ls`, and shows nothing outside Herdr. |
 | `themes/catppuccin-macchiato.json` | Catppuccin Macchiato, matching the Ghostty theme of the same name. |
 | `examples/` | `keys.json`, `companies.json`, `worktree-setup.toml` and `linear-config.json` to start from. |
 
@@ -67,6 +68,14 @@ Then:
    - **Never commit this file.**
 4. **Companies.** Edit `~/.config/herdr-app/companies.json`. Each entry is a `name`, a `match` regex for the origin URL and a theme `color` (`ansi1`–`ansi6`). With no file, there are no groups.
 5. **Worktree setup.** Edit `~/.config/herdr-app/worktree-setup.toml`.
+
+**Claude Code badge.** Optional. At a Claude Code prompt:
+
+```
+/plugin install herdr-badge --marketplace tdi/herdr-app-kit
+```
+
+Answer `y` to add the marketplace, then pick a scope. From a clone: `claude plugin marketplace add /path/to/herdr-app-kit`, then `claude plugin install herdr-badge@herdr-app-kit`.
 
 Check each mod after any change: `herdr-app check ~/.config/herdr-app/mods/<name>`.
 

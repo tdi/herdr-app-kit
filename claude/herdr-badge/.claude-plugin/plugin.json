@@ -1,0 +1,6 @@
+{
+  "name": "herdr-badge",
+  "version": "0.1.0",
+  "description": "Shows the Herdr space and agent of this terminal above the prompt, on the right",
+  "types": "./types/index.d.ts"
+}

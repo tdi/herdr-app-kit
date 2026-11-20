@@ -1,0 +1,13 @@
+{
+  "name": "herdr-app-kit",
+  "owner": {
+    "name": "tdi"
+  },
+  "plugins": [
+    {
+      "name": "herdr-badge",
+      "source": "./claude/herdr-badge",
+      "description": "Shows the Herdr space and agent of this terminal above the prompt"
+    }
+  ]
+}
